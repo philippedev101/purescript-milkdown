@@ -13,6 +13,13 @@ package:
     location:
       githubOwner: philippedev101
       githubRepo: purescript-milkdown
+  test:
+    main: Test.Main
+    dependencies:
+      - console
+      - either
+      - exceptions
+      - refs
 
 workspace:
   packageSet:

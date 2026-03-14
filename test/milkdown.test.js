@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeAll } from "bun:test";
+import { describe, test, expect, mock } from "bun:test";
 
 // Mock @milkdown/crepe before importing the FFI
 mock.module("@milkdown/crepe", () => ({
@@ -9,9 +9,17 @@ mock.module("@milkdown/crepe", () => ({
       this._readonly = false;
       this._plugins = [];
       this._listeners = { markdownUpdated: [], focus: [], blur: [] };
+      this._focused = false;
+      const self = this;
+      const ctx = {
+        get: (key) => {
+          if (key === "editorView") return { focus: () => { self._focused = true; } };
+          return undefined;
+        },
+      };
       this.editor = {
         use: (plugin) => this._plugins.push(plugin),
-        action: (fn) => fn(this),
+        action: (fn) => fn(ctx),
       };
     }
     async create() {}
@@ -47,9 +55,15 @@ mock.module("@milkdown/crepe", () => ({
   },
 }));
 
+mock.module("@milkdown/kit/core", () => ({
+  editorViewCtx: "editorView",
+}));
+
+const replaceAllCalls = [];
 mock.module("@milkdown/kit/utils", () => ({
-  replaceAll: (md) => (editor) => {
-    editor._markdown = md;
+  replaceAll: (md) => {
+    replaceAllCalls.push(md);
+    return () => {};
   },
 }));
 
@@ -61,6 +75,7 @@ const {
   _getMarkdown,
   _setMarkdown,
   _setReadonly,
+  _focus,
   _onMarkdownUpdated,
   _onFocus,
   _onBlur,
@@ -72,7 +87,7 @@ function createEditor(opts = {}) {
     _create(opts.features || [])(
       {
         root,
-        defaultValue: opts.defaultValue || "# Hello",
+        defaultValue: opts.defaultValue ?? "# Hello",
         readonly: opts.readonly || false,
         features: [],
         plugins: opts.plugins || [],
@@ -108,6 +123,43 @@ describe("create", () => {
     const editor = await createEditor({ plugins: [plugin1, plugin2] });
     expect(editor._plugins).toEqual([plugin1, plugin2]);
   });
+
+  test("disables all features when none requested", async () => {
+    const editor = await createEditor({ features: [] });
+    const features = editor._config.features;
+    for (const value of Object.values(features)) {
+      expect(value).toBe(false);
+    }
+  });
+
+  test("enables all features when all requested", async () => {
+    const allFeatures = [
+      "CodeMirror", "ListItem", "LinkTooltip", "Cursor", "ImageBlock",
+      "BlockEdit", "Toolbar", "Placeholder", "Table", "Latex",
+    ];
+    const editor = await createEditor({ features: allFeatures });
+    const features = editor._config.features;
+    expect(features["code-mirror"]).toBe(true);
+    expect(features["list-item"]).toBe(true);
+    expect(features["link-tooltip"]).toBe(true);
+    expect(features["cursor"]).toBe(true);
+    expect(features["image-block"]).toBe(true);
+    expect(features["block-edit"]).toBe(true);
+    expect(features["toolbar"]).toBe(true);
+    expect(features["placeholder"]).toBe(true);
+    expect(features["table"]).toBe(true);
+    expect(features["latex"]).toBe(true);
+  });
+
+  test("uses empty string when defaultValue is empty", async () => {
+    const editor = await createEditor({ defaultValue: "" });
+    expect(editor.getMarkdown()).toBe("");
+  });
+
+  test("does not set readonly when config.readonly is false", async () => {
+    const editor = await createEditor({ readonly: false });
+    expect(editor._readonly).toBe(false);
+  });
 });
 
 describe("destroy", () => {
@@ -127,11 +179,12 @@ describe("getMarkdown", () => {
 });
 
 describe("setMarkdown", () => {
-  test("replaces editor content via replaceAll action", async () => {
+  test("calls replaceAll with the given markdown", async () => {
     const editor = await createEditor({ defaultValue: "# Old" });
+    const before = replaceAllCalls.length;
     _setMarkdown(editor, "# New")();
-    const md = _getMarkdown(editor)();
-    expect(md).toBe("# New");
+    expect(replaceAllCalls.length).toBe(before + 1);
+    expect(replaceAllCalls[replaceAllCalls.length - 1]).toBe("# New");
   });
 });
 
@@ -149,6 +202,14 @@ describe("setReadonly", () => {
   });
 });
 
+describe("focus", () => {
+  test("focuses the editor view", async () => {
+    const editor = await createEditor();
+    _focus(editor)();
+    expect(editor._focused).toBe(true);
+  });
+});
+
 describe("onMarkdownUpdated", () => {
   test("registers a listener for markdown changes", async () => {
     const editor = await createEditor();
@@ -159,9 +220,22 @@ describe("onMarkdownUpdated", () => {
 
     expect(editor._listeners.markdownUpdated.length).toBe(1);
 
-    // Simulate the callback
+    // Simulate the callback — receives new markdown, not previous
     editor._listeners.markdownUpdated[0]({}, "# Updated", "# Old");
     expect(received).toBe("# Updated");
+  });
+
+  test("supports multiple listeners", async () => {
+    const editor = await createEditor();
+    const calls = [];
+    _onMarkdownUpdated(editor, (md) => () => calls.push("a:" + md))();
+    _onMarkdownUpdated(editor, (md) => () => calls.push("b:" + md))();
+
+    expect(editor._listeners.markdownUpdated.length).toBe(2);
+
+    editor._listeners.markdownUpdated[0]({}, "x", "");
+    editor._listeners.markdownUpdated[1]({}, "x", "");
+    expect(calls).toEqual(["a:x", "b:x"]);
   });
 });
 

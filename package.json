@@ -4,7 +4,10 @@
     "@milkdown/crepe": "^7.6",
     "@milkdown/kit": "^7.6"
   },
-"scripts": {
-    "test": "spago build && bun test test/milkdown.test.js"
+  "scripts": {
+    "test": "spago build && bun test"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.8.4"
   }
 }

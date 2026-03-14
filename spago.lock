@@ -14,7 +14,12 @@
           ]
         },
         "test": {
-          "dependencies": []
+          "dependencies": [
+            "console",
+            "either",
+            "exceptions",
+            "refs"
+          ]
         }
       }
     },
@@ -596,6 +601,15 @@
         "newtype",
         "prelude",
         "tuples"
+      ]
+    },
+    "console": {
+      "type": "registry",
+      "version": "6.1.0",
+      "integrity": "sha256-3T5PPz1mATZmV0C4GzkCkpLlCa5xG7u8ZNgnLrrrI1Q=",
+      "dependencies": [
+        "effect",
+        "prelude"
       ]
     },
     "const": {

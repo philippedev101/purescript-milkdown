@@ -1,4 +1,5 @@
 import { Crepe, CrepeFeature } from "@milkdown/crepe";
+import { editorViewCtx } from "@milkdown/kit/core";
 import { replaceAll } from "@milkdown/kit/utils";
 
 import "@milkdown/crepe/theme/common/style.css";
@@ -64,6 +65,11 @@ export const _setMarkdown = (editor, md) => () => {
 // setReadonly :: Fn2 Editor Boolean (Effect Unit)
 export const _setReadonly = (editor, value) => () => {
   editor.setReadonly(value);
+};
+
+// focus :: Editor -> Effect Unit
+export const _focus = (editor) => () => {
+  editor.editor.action((ctx) => ctx.get(editorViewCtx).focus());
 };
 
 // onMarkdownUpdated :: Fn2 Editor (String -> Effect Unit) (Effect Unit)

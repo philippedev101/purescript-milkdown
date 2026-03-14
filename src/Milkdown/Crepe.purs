@@ -8,6 +8,7 @@ module Milkdown.Crepe
   , getMarkdown
   , setMarkdown
   , setReadonly
+  , focus
   , onMarkdownUpdated
   , onFocus
   , onBlur
@@ -91,6 +92,12 @@ foreign import _setReadonly :: Fn2 Editor Boolean (Effect Unit)
 -- | Toggle read-only mode.
 setReadonly :: Editor -> Boolean -> Effect Unit
 setReadonly editor value = runFn2 _setReadonly editor value
+
+foreign import _focus :: Editor -> Effect Unit
+
+-- | Programmatically focus the editor.
+focus :: Editor -> Effect Unit
+focus = _focus
 
 foreign import _onMarkdownUpdated :: Fn2 Editor (String -> Effect Unit) (Effect Unit)
 

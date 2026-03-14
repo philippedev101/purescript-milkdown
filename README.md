@@ -20,7 +20,7 @@ This library wraps the [Crepe](https://milkdown.dev/docs/guide/using-crepe) high
 - The lower-level `@milkdown/kit` editor API
 - ProseMirror commands and node/mark access
 - The `updated` event (doc-level, as opposed to `markdownUpdated`)
-- Programmatic focus/blur (only callbacks are exposed)
+- Programmatic blur (only `focus` and callbacks are exposed)
 - Theme switching at runtime (dark theme CSS must be imported by the consumer)
 
 ## Installation
@@ -69,6 +69,9 @@ setMarkdown :: Editor -> String -> Effect Unit
 
 -- Mode
 setReadonly  :: Editor -> Boolean -> Effect Unit
+
+-- Focus
+focus         :: Editor -> Effect Unit
 
 -- Events
 onMarkdownUpdated :: Editor -> (String -> Effect Unit) -> Effect Unit
