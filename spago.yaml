@@ -1,12 +1,11 @@
 package:
   name: milkdown
   dependencies:
-    - aff
-    - arrays
-    - effect
-    - functions
-    - prelude
-    - web-dom
+    - aff: ">=8.0.0 <9.0.0"
+    - effect: ">=4.0.0 <5.0.0"
+    - functions: ">=6.0.0 <7.0.0"
+    - prelude: ">=6.0.1 <7.0.0"
+    - web-dom: ">=6.0.0 <7.0.0"
   publish:
     version: 0.1.0
     license: Apache-2.0
