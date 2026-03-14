@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@milkdown/crepe": "^7.6",
+    "@milkdown/kit": "^7.6"
+  },
+"scripts": {
+    "test": "spago build && bun test test/milkdown.test.js"
+  }
+}

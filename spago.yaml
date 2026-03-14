@@ -1,0 +1,20 @@
+package:
+  name: milkdown
+  dependencies:
+    - aff
+    - arrays
+    - effect
+    - functions
+    - prelude
+    - web-dom
+  publish:
+    version: 0.1.0
+    license: Apache-2.0
+    location:
+      githubOwner: philippedev101
+      githubRepo: purescript-milkdown
+
+workspace:
+  packageSet:
+    registry: 62.3.0
+  extraPackages: {}
